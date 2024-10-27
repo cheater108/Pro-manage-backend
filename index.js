@@ -15,9 +15,17 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/board", boardRouter);
 app.use("/api/v1/task", taskRouter);
 
-app.get("/", (req, res) => {
+app.get("/health", (req, res) => {
     res.json({ message: "hello" });
 });
+
+if (process.env.ENV !== "LOCAL") {
+    app.use(express.static(path.resolve("dist")));
+
+    app.get("*", (req, res) => {
+        res.sendFile(path.resolve("dist", "index.html"));
+    });
+}
 
 app.listen(process.env.PORT, () => {
     console.log("server started on port", process.env.PORT);

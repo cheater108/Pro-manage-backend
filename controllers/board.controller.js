@@ -4,9 +4,11 @@ import { filter, getWeekDates, reverseArray } from "../utils/helpers.js";
 
 // classify tasks into groups by status
 function classifyTasks(tasks, filter_by, todo, backlog, inprogress, done) {
-    const reverse_tasks = reverseArray(tasks);
+    // to change the order of tasks
+    // const reverse_tasks = reverseArray(tasks);
+
     const { week_start, week_end } = getWeekDates();
-    for (const task of reverse_tasks) {
+    for (const task of tasks) {
         if (!filter(task, filter_by, week_start, week_end)) {
             continue;
         }
