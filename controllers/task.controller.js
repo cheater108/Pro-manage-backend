@@ -2,17 +2,37 @@ import Board from "../database/schemas/board.schema.js";
 import Task from "../database/schemas/task.schema.js";
 import User from "../database/schemas/user.schema.js";
 import { isOwner } from "../utils/helpers.js";
-import { isValidObjectId } from "../utils/validators.js";
+import {
+    isValidObjectId,
+    taskSchema,
+    updateTaskSchema,
+    validateTodos,
+} from "../utils/validators.js";
 
 async function postTask(req, res) {
     const data = req.body;
+
+    if (!isValidObjectId(req.user.board_id)) {
+        return res
+            .status(400)
+            .json({ error: "No board found, please login again" });
+    }
+
     const board = await Board.findById(req.user.board_id);
     const assignedUser = await User.findOne({ email: data.assigned_email });
+
+    const taskParse = taskSchema.safeParse(data);
+    if (!taskParse.success) {
+        return res.status(400).json({ error: taskParse.error });
+    }
+    const todosParse = validateTodos(data.checklist);
+    if (!todosParse.valid) {
+        return res.status(400).json({ error: todosParse.message });
+    }
 
     const task = new Task({
         title: data.title,
         priority: data.priority,
-        status: data.status,
         checklist: data.checklist,
         due_date: data.due_date,
         creator: req.user.email,
@@ -34,8 +54,20 @@ async function postTask(req, res) {
 
 async function updateTask(req, res) {
     const { id } = req.params;
+
     const taskData = req.body;
-    const task = await Task.findById(id);
+
+    const taskParse = updateTaskSchema.safeParse(taskData);
+    if (!taskParse.success) {
+        return res.status(400).json({ error: taskParse.error });
+    }
+    const todosParse = validateTodos(taskData.checklist);
+    if (!todosParse.valid) {
+        return res.status(400).json({ error: todosParse.message });
+    }
+
+    // const task = await Task.findById(id);
+    const task = req.task;
     if (!task) {
         return res.status(400).json({ error: "no suck task found" });
     }
@@ -55,8 +87,19 @@ async function updateTask(req, res) {
             email: taskData.assigned_email,
         });
         if (new_assigned) {
+            // if assigning after the creation of task
+            if (!task.assign_to) {
+                task.assign_to = new_assigned._id;
+                task.assigned_email = new_assigned.email;
+                await Board.findByIdAndUpdate(new_assigned.board, {
+                    $push: { assigned_task: task._id },
+                });
+            }
+
             // check if new assigned user is different
-            if (new_assigned._id.toString() !== task.assign_to.toString()) {
+            else if (
+                new_assigned._id.toString() !== task.assign_to.toString()
+            ) {
                 const old_assigned = await User.findById(task.assign_to);
                 if (old_assigned) {
                     await Board.findByIdAndUpdate(old_assigned.board, {
@@ -79,7 +122,8 @@ async function updateTask(req, res) {
 async function deleteTask(req, res) {
     const { id } = req.params;
 
-    const task = await Task.findById(id);
+    // const task = await Task.findById(id);
+    const task = req.task;
     if (!task) {
         return res.status(400).json({ error: "no suck task found" });
     }

@@ -42,7 +42,7 @@ function getWeekDates() {
     let week_end = new Date();
 
     week_start.setHours(0, 0, 0, 0);
-    week_end.setHours(0, 0, 0, 0);
+    week_end.setHours(23, 59, 59, 0);
 
     // get week start and end dates
     // weeks start at monday and end at sunday

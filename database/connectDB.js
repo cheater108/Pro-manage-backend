@@ -11,7 +11,7 @@ function connectDB() {
     } else {
         mongoose
             .connect(process.env.MONGO_ATLAS, {
-                dbName: "Pro-manage",
+                dbName: "pro-manage",
             })
             .then(() => console.log("connected to mongodb atlas"))
             .catch(() => console.log("Error connecting to db"));
