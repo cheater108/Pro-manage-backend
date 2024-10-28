@@ -21,10 +21,12 @@ async function postTask(req, res) {
     const board = await Board.findById(req.user.board_id);
     const assignedUser = await User.findOne({ email: data.assigned_email });
 
+    // zod validation
     const taskParse = taskSchema.safeParse(data);
     if (!taskParse.success) {
         return res.status(400).json({ error: taskParse.error });
     }
+    // cutom todos validation
     const todosParse = validateTodos(data.checklist);
     if (!todosParse.valid) {
         return res.status(400).json({ error: todosParse.message });
@@ -53,8 +55,6 @@ async function postTask(req, res) {
 }
 
 async function updateTask(req, res) {
-    const { id } = req.params;
-
     const taskData = req.body;
 
     const taskParse = updateTaskSchema.safeParse(taskData);
@@ -66,7 +66,7 @@ async function updateTask(req, res) {
         return res.status(400).json({ error: todosParse.message });
     }
 
-    // const task = await Task.findById(id);
+    // due to isAuthorized middleware req will already have task data
     const task = req.task;
     if (!task) {
         return res.status(400).json({ error: "no suck task found" });
@@ -122,7 +122,6 @@ async function updateTask(req, res) {
 async function deleteTask(req, res) {
     const { id } = req.params;
 
-    // const task = await Task.findById(id);
     const task = req.task;
     if (!task) {
         return res.status(400).json({ error: "no suck task found" });

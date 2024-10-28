@@ -6,11 +6,12 @@ import {
     registerUser,
 } from "../controllers/user.controller.js";
 import isLoggedIn from "../middleware/isLoggedIn.js";
+import catchAsync from "../utils/catchAsync.js";
 
 const router = Router();
 
-router.get("/", isLoggedIn, getUsers);
-router.post("/edit", isLoggedIn, editUser);
+router.get("/", isLoggedIn, catchAsync(getUsers));
+router.post("/edit", isLoggedIn, catchAsync(editUser));
 router.post("/login", loginUser);
 router.post("/register", registerUser);
 

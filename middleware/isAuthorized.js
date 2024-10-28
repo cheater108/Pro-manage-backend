@@ -2,6 +2,7 @@ import { isValidObjectId } from "../utils/validators.js";
 import Task from "../database/schemas/task.schema.js";
 import Board from "../database/schemas/board.schema.js";
 
+// autorization middleware to check if user has access to update, delete tasks
 async function isAuthorized(req, res, next) {
     const { id } = req.params;
 
@@ -17,7 +18,7 @@ async function isAuthorized(req, res, next) {
 
     req.task = task;
 
-    // if logged in user is owner
+    // if logged in user is the owner of task
     if (user.email === task.creator) {
         return next();
     }
@@ -27,16 +28,16 @@ async function isAuthorized(req, res, next) {
         return next();
     }
 
-    // or if whole board is shared with logged in user
+    // or if whole board is shared with the logged in user
     const board = await Board.findById(user.board_id);
     for (const shared_board_id of board.shared_boards) {
         const shared_board = await Board.findById(shared_board_id);
 
-        // task can either be original users tasks list
+        // task can either be original user's tasks list
         if (shared_board.tasks.find((t) => t.toString() === id)) {
             return next();
         }
-        // or in assigned_tasks of original user
+        // or in assigned_tasks of the original user
         if (shared_board.assigned_task.find((t) => t.toString() === id)) {
             return next();
         }

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 
+// check for loggin
 function isLoggedIn(req, res, next) {
     const token = req.get("Authorization");
     try {

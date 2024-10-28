@@ -7,13 +7,14 @@ import {
 } from "../controllers/task.controller.js";
 import isLoggedIn from "../middleware/isLoggedIn.js";
 import isAuthorized from "../middleware/isAuthorized.js";
+import catchAsync from "../utils/catchAsync.js";
 
 const router = Router();
 
-router.post("/", isLoggedIn, postTask);
-router.put("/:id", isLoggedIn, isAuthorized, updateTask);
-router.delete("/:id", isLoggedIn, isAuthorized, deleteTask);
+router.post("/", isLoggedIn, catchAsync(postTask));
+router.put("/:id", isLoggedIn, isAuthorized, catchAsync(updateTask));
+router.delete("/:id", isLoggedIn, isAuthorized, catchAsync(deleteTask));
 
-router.get("/public/:id", getPublicTask);
+router.get("/public/:id", catchAsync(getPublicTask));
 
 export default router;

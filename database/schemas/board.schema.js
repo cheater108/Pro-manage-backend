@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const boardSchema = new mongoose.Schema({
-    // my own tasks
+    // my own tasks references
     tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
 
     // boards shared with me

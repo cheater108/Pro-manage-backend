@@ -5,11 +5,12 @@ import {
     getBoard,
     shareBoard,
 } from "../controllers/board.controller.js";
+import catchAsync from "../utils/catchAsync.js";
 
 const router = Router();
 
-router.get("/", isLoggedIn, getBoard);
-router.get("/info", isLoggedIn, getAdditionalInfo);
-router.post("/share", isLoggedIn, shareBoard);
+router.get("/", isLoggedIn, catchAsync(getBoard));
+router.get("/info", isLoggedIn, catchAsync(getAdditionalInfo));
+router.post("/share", isLoggedIn, catchAsync(shareBoard));
 
 export default router;

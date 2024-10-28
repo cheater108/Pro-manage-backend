@@ -48,7 +48,7 @@ async function registerUser(req, res) {
         return res.status(400).json({ error: userParse.error });
     }
 
-    // validate password
+    // custom password validation
     const passwordParse = passwordValidate(password);
     if (!passwordParse.valid) {
         return res.status(400).json({ error: passwordParse.message });
@@ -74,7 +74,6 @@ async function registerUser(req, res) {
 }
 
 async function editUser(req, res) {
-    // only with valid token can edit user
     const user_id = req.user.id;
     const data = req.body;
 
@@ -103,12 +102,12 @@ async function editUser(req, res) {
         await User.findByIdAndUpdate(user_id, { email: new_email });
         const board = await Board.findById(req.user.board_id);
 
-        // update tasks where email was owner
+        // update all tasks where previous email was owner
         for (const task_id of board.tasks) {
             await Task.findByIdAndUpdate(task_id, { creator: new_email });
         }
 
-        // update tasks where email was assigned to
+        // update tasks where email was assigned the task
         for (const task_id of board.assigned_task) {
             await Task.findByIdAndUpdate(task_id, {
                 assigned_email: new_email,

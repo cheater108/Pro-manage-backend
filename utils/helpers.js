@@ -1,8 +1,10 @@
+// filter task according to filter_by
 function filter(task, filter_by, week_start, week_end) {
     if (!task.due_date) {
         return true;
     }
 
+    // for all task
     if (filter_by === "All") {
         return true;
     }
@@ -37,6 +39,7 @@ function filter(task, filter_by, week_start, week_end) {
     return false;
 }
 
+// get current week start and end dates, which is needed in filter
 function getWeekDates() {
     let week_start = new Date();
     let week_end = new Date();
@@ -58,10 +61,12 @@ function getWeekDates() {
     return { week_start, week_end };
 }
 
+// to check if user id creator of a task
 function isOwner(owner_email, task_email) {
     return owner_email === task_email;
 }
 
+// reverse array helper to change order of tasks
 function reverseArray(arr) {
     const rev = [];
     for (let i = arr.length - 1; i >= 0; i--) {
