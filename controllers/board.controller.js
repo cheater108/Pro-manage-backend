@@ -101,6 +101,8 @@ async function getBoard(req, res) {
 }
 
 // share board with other users
+// as per my understanding of requirements.
+// board can only be shared at 1 user depth, so shared user cannot share the board which was shared to him again.
 async function shareBoard(req, res) {
     const { share_email } = req.body;
     const user = await User.findOne({ email: share_email });
