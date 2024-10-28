@@ -146,7 +146,6 @@ async function getPublicTask(req, res) {
     const { id } = req.params;
 
     if (!isValidObjectId(id)) {
-        console.log("here");
         return res.status(404).json({ error: "no such task" });
     }
 

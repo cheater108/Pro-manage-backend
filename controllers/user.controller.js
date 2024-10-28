@@ -124,7 +124,6 @@ async function editUser(req, res) {
         // check if current password provided is correct
         const correctPass = await bcrypt.compare(data.password, user.password);
         if (!correctPass) {
-            console.log("inncorect");
             return res
                 .status(400)
                 .json({ error: "Current password is incorrect" });
