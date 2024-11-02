@@ -22,6 +22,8 @@ const registerSchema = z.object({
         .email("Invalid email format"),
 });
 
+const emailSchema = registerSchema.pick({ email: true });
+
 const taskSchema = z.object({
     title: z
         .string({
@@ -108,6 +110,7 @@ function validateTodos(todos) {
 
 export {
     registerSchema,
+    emailSchema,
     taskSchema,
     updateTaskSchema,
     isValidObjectId,

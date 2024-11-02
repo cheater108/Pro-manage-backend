@@ -1,7 +1,7 @@
 import Board from "../database/schemas/board.schema.js";
 import Task from "../database/schemas/task.schema.js";
 import User from "../database/schemas/user.schema.js";
-import { isOwner } from "../utils/helpers.js";
+import { getZodError, isOwner } from "../utils/helpers.js";
 import {
     isValidObjectId,
     taskSchema,
@@ -24,7 +24,7 @@ async function postTask(req, res) {
     // zod validation
     const taskParse = taskSchema.safeParse(data);
     if (!taskParse.success) {
-        return res.status(400).json({ error: taskParse.error });
+        return res.status(400).json(getZodError(taskParse.error));
     }
     // cutom todos validation
     const todosParse = validateTodos(data.checklist);
@@ -44,11 +44,13 @@ async function postTask(req, res) {
         task.assign_to = assignedUser._id;
         task.assigned_email = assignedUser.email;
         await Board.findByIdAndUpdate(assignedUser.board, {
-            $push: { assigned_task: task._id },
+            // adding new task at the top.
+            $push: { assigned_task: { $each: [task._id], $position: 0 } },
         });
     }
 
-    board.tasks.push(task._id);
+    // adding new task at the top.
+    board.tasks.unshift(task._id);
     await task.save();
     await board.save();
     res.status(201).json({ message: "task created" });
@@ -59,7 +61,7 @@ async function updateTask(req, res) {
 
     const taskParse = updateTaskSchema.safeParse(taskData);
     if (!taskParse.success) {
-        return res.status(400).json({ error: taskParse.error });
+        return res.status(400).json(getZodError(taskParse.error));
     }
     const todosParse = validateTodos(taskData.checklist);
     if (!todosParse.valid) {

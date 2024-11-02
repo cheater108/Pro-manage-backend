@@ -4,9 +4,6 @@ import { filter, getWeekDates, reverseArray } from "../utils/helpers.js";
 
 // classify tasks into groups by status
 function classifyTasks(tasks, filter_by, todo, backlog, inprogress, done) {
-    // to change the order of tasks
-    // const reverse_tasks = reverseArray(tasks);
-
     const { week_start, week_end } = getWeekDates();
     for (const task of tasks) {
         if (!filter(task, filter_by, week_start, week_end)) {
@@ -101,8 +98,6 @@ async function getBoard(req, res) {
 }
 
 // share board with other users
-// as per my understanding of requirements.
-// board can only be shared at 1 user depth, so shared user cannot share the board which was shared to him again.
 async function shareBoard(req, res) {
     const { share_email } = req.body;
     const user = await User.findOne({ email: share_email });

@@ -66,6 +66,15 @@ function isOwner(owner_email, task_email) {
     return owner_email === task_email;
 }
 
+// extracting zod error messages
+function getZodError(err) {
+    const issues = err.issues;
+    if (issues.length > 0) {
+        return { error: issues[0].message };
+    }
+    return { error: "Something went wrong, please refresh" };
+}
+
 // reverse array helper to change order of tasks
 function reverseArray(arr) {
     const rev = [];
@@ -75,4 +84,4 @@ function reverseArray(arr) {
     return rev;
 }
 
-export { isOwner, reverseArray, filter, getWeekDates };
+export { isOwner, reverseArray, filter, getWeekDates, getZodError };

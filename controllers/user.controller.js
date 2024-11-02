@@ -3,7 +3,12 @@ import jwt from "jsonwebtoken";
 import User from "../database/schemas/user.schema.js";
 import Board from "../database/schemas/board.schema.js";
 import Task from "../database/schemas/task.schema.js";
-import { passwordValidate, registerSchema } from "../utils/validators.js";
+import {
+    emailSchema,
+    passwordValidate,
+    registerSchema,
+} from "../utils/validators.js";
+import { getZodError } from "../utils/helpers.js";
 
 async function getUsers(req, res) {
     const users = await User.find({ _id: { $ne: req.user.id } }).select(
@@ -45,7 +50,7 @@ async function registerUser(req, res) {
     // zod parse
     const userParse = registerSchema.safeParse({ name, email });
     if (!userParse.success) {
-        return res.status(400).json({ error: userParse.error });
+        return res.status(400).json(getZodError(userParse.error));
     }
 
     // custom password validation
@@ -77,12 +82,22 @@ async function editUser(req, res) {
     const user_id = req.user.id;
     const data = req.body;
 
+    const user = await User.findById(user_id);
+
+    // check if current password provided is correct
+    const correctPass = await bcrypt.compare(data.password, user.password);
+
     // only allow one thing to change at a time i.e either name , email or password
     if (
         data.name.length > 0 &&
         data.email.length === 0 &&
         data.new_password.length === 0
     ) {
+        if (!correctPass) {
+            return res
+                .status(400)
+                .json({ error: "Current password is incorrect" });
+        }
         await User.findByIdAndUpdate(user_id, { name: data.name });
         return res.json({ message: "Edited successfully" });
     } else if (
@@ -92,10 +107,21 @@ async function editUser(req, res) {
     ) {
         const new_email = data.email?.toLowerCase();
 
+        const emailParse = emailSchema.safeParse({ email: new_email });
+        if (!emailParse.success) {
+            return res.status(400).json(getZodError(emailParse.error));
+        }
+
         // if new_email already exists dont update email
         const emailAlready = await User.findOne({ email: new_email });
         if (emailAlready) {
             return res.status(400).json({ error: "This email already exists" });
+        }
+
+        if (!correctPass) {
+            return res
+                .status(400)
+                .json({ error: "Current password is incorrect" });
         }
 
         // update user email
@@ -119,18 +145,13 @@ async function editUser(req, res) {
         data.name.length === 0 &&
         data.email.length === 0
     ) {
-        const user = await User.findById(user_id);
-
-        // check if current password provided is correct
-        const correctPass = await bcrypt.compare(data.password, user.password);
         if (!correctPass) {
             return res
                 .status(400)
                 .json({ error: "Current password is incorrect" });
         }
-
         // check/validate new password
-        const passwordParse = passwordValidate(new_password);
+        const passwordParse = passwordValidate(data.new_password);
         if (!passwordParse.valid) {
             return res.status(400).json({ error: passwordParse.message });
         }
